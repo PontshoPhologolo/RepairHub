@@ -87,7 +87,9 @@ CREATE DATABASE repairhub;
 
 Then in pgAdmin or psql, connect to the `repairhub` database and run the schema.sql file in pgAdmin:
 
+```bash
 psql -U postgres -d repairhub -f schema.sql
+```
 
 The schema creates all tables and seeds a default admin account:
 
@@ -111,7 +113,9 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 ```
 Run the backend in the terminal/commandline by using this line:
 
+```bash
 ./mvnw spring-boot:run
+```
 
 The API will be available at `http://localhost:8080`.
 
