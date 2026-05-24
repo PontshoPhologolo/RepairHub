@@ -1,18 +1,4 @@
--- RepairHub Database Schema
--- Drop everything cleanly
-DROP TABLE IF EXISTS reviews CASCADE;
-DROP TABLE IF EXISTS technician_assignments CASCADE;
-DROP TABLE IF EXISTS repair_requests CASCADE;
-DROP TABLE IF EXISTS technician_profiles CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
 
--- ─────────────────────────────────────────
--- USERS
--- role:   'customer' | 'technician' | 'admin'
--- status: 'active' | 'pending' | 'suspended'
---   - technicians start as 'pending' until admin approves
---   - customers start as 'active' immediately
--- ─────────────────────────────────────────
 CREATE TABLE users (
     user_id     BIGSERIAL PRIMARY KEY,
     email       VARCHAR(255) NOT NULL UNIQUE,
@@ -24,10 +10,6 @@ CREATE TABLE users (
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ─────────────────────────────────────────
--- TECHNICIAN PROFILES
--- Created when technician registers (pending approval)
--- ─────────────────────────────────────────
 CREATE TABLE technician_profiles (
     technician_id   BIGINT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     bio             TEXT,
@@ -36,11 +18,6 @@ CREATE TABLE technician_profiles (
     jobs_completed  INTEGER DEFAULT 0
 );
 
--- ─────────────────────────────────────────
--- REPAIR REQUESTS
--- status: 'pending' | 'assigned' | 'in_progress' | 'completed'
--- Address stored as structured fields on the request itself
--- ─────────────────────────────────────────
 CREATE TABLE repair_requests (
     request_id      BIGSERIAL PRIMARY KEY,
     customer_id     BIGINT NOT NULL REFERENCES users(user_id),
@@ -57,13 +34,7 @@ CREATE TABLE repair_requests (
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ─────────────────────────────────────────
--- TECHNICIAN ASSIGNMENTS
--- One active assignment per request at a time
--- started_at  set when technician clicks "Start Job"
--- completed_at set when technician clicks "Complete"
--- final_amount can differ from estimated_cost
--- ─────────────────────────────────────────
+
 CREATE TABLE technician_assignments (
     assignment_id   BIGSERIAL PRIMARY KEY,
     request_id      BIGINT NOT NULL REFERENCES repair_requests(request_id) ON DELETE CASCADE,
@@ -75,11 +46,7 @@ CREATE TABLE technician_assignments (
     notes           TEXT
 );
 
--- ─────────────────────────────────────────
--- REVIEWS
--- Customer leaves a review after request is completed
--- One review per request
--- ─────────────────────────────────────────
+
 CREATE TABLE reviews (
     review_id       BIGSERIAL PRIMARY KEY,
     request_id      BIGINT NOT NULL UNIQUE REFERENCES repair_requests(request_id) ON DELETE CASCADE,
@@ -92,23 +59,19 @@ CREATE TABLE reviews (
 
 -- ─────────────────────────────────────────
 -- SEED: Default admin account
--- Password: admin123 (you should change this)
--- This is a bcrypt hash of "admin123"
+-- Password: 12345 (you should change this)
+-- This is a bcrypt hash of "12345"
 -- ─────────────────────────────────────────
 INSERT INTO users (email, password_hash, full_name, role, status)
 VALUES (
     'admin@repairhub.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lh7y',
+    '$2a$10$Kt5Zc8HsJSlcYd2cKvy8ou0Bql5aWwbNBuhR/fvv8XQWvSy.p3vXG',
     'System Admin',
     'admin',
     'active'
 );
 
--- ─────────────────────────────────────────
--- APPEALS
--- Created when a suspended technician submits an appeal
--- status: 'pending' | 'approved' | 'rejected'
--- ─────────────────────────────────────────
+
 CREATE TABLE appeals (
     appeal_id   BIGSERIAL PRIMARY KEY,
     user_id     BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
